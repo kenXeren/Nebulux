@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#ffd700">
+  <meta name="description" content="RetroQuest - Your offline game store for retro gaming adventures">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="RetroQuest">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/png" href="/icons/icon-192x192.png">
+  <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+  <title>Login - Galaxium</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://apis.google.com/js/platform.js" async defer></script>
+  <meta name="google-signin-client_id" content="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #4a90e2;
+      --secondary: #6c757d;
+      --accent: #61dafb;
+      --success: #28a745;
+      --danger: #dc3545;
+      --dark: #1a1a1a;
+      --light: #f8f9fa;
+    }
+    
+    body {
+      background-color: var(--dark);
+      color: var(--light);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-image: url('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
+      background-size: cover;
+      background-position: center;
+      background-blend-mode: overlay;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+    
+    .card {
+      background-color: rgba(0, 0, 0, 0.8);
+      border-radius: 0.5rem;
+      padding: 2rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .form-control {
+      display: block;
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 0.25rem;
+      color: var(--light);
+      margin-bottom: 1rem;
+    }
+    
+    .form-control:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(97, 218, 251, 0.5);
+    }
+    
+    .btn {
+      display: inline-block;
+      font-weight: 500;
+      text-align: center;
+      white-space: nowrap;
+      vertical-align: middle;
+      user-select: none;
+      border: 1px solid transparent;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      line-height: 1.5;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .btn-primary {
+      color: var(--light);
+      background-color: var(--primary);
+    }
+    
+    .btn-primary:hover {
+      background-color: #3a80d2;
+    }
+    
+    .btn-secondary {
+      color: var(--light);
+      background-color: var(--secondary);
+    }
+    
+    .btn-secondary:hover {
+      background-color: #5c6670;
+    }
+    
+    .btn-google {
+      color: var(--light);
+      background-color: #db4437;
+    }
+    
+    .btn-google:hover {
+      background-color: #c53329;
+    }
+    
+    .btn-facebook {
+      color: var(--light);
+      background-color: #3b5998;
+    }
+    
+    .btn-facebook:hover {
+      background-color: #2d4373;
+    }
+    
+    .text-center {
+      text-align: center;
+    }
+    
+    .logo {
+      color: var(--light);
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .logo span {
+      color: var(--accent);
+    }
+    
+    .form-switch {
+      margin-top: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .text-accent {
+      color: var(--accent);
+    }
+    
+    .error-message {
+      color: var(--danger);
+      margin-bottom: 1rem;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mx-auto px-4 py-12">
+    <div class="max-w-md mx-auto">
+      <div class="text-center mb-8">
+        <h1 class="logo">Galaxium <span>Login</span></h1>
+        <p class="text-gray-400">Sign in to access your gaming portal</p>
+      </div>
+      
+      <div class="card">
+        <div class="text-center mb-6">
+          <button id="loginTab" class="btn btn-primary mx-2">Login</button>
+          <button id="signupTab" class="btn btn-secondary mx-2">Sign Up</button>
+        </div>
+        
+        <div id="loginForm">
+          <div id="loginError" class="error-message text-center mb-4"></div>
+          
+          <form id="loginFormElement">
+            <div class="mb-4">
+              <label for="email" class="block text-sm font-medium mb-1">Email (Gmail only)</label>
+              <input type="email" id="email" class="form-control" placeholder="example@gmail.com" required>
+            </div>
+            
+            <div class="mb-6">
+              <label for="password" class="block text-sm font-medium mb-1">Password</label>
+              <input type="password" id="password" class="form-control" placeholder="Enter your password" required>
+            </div>
+            
+            <div class="flex items-center justify-between mb-6">
+              <div>
+                <input type="checkbox" id="remember" class="mr-2">
+                <label for="remember" class="text-sm">Remember me</label>
+              </div>
+              <a href="#" class="text-sm text-accent">Forgot password?</a>
+            </div>
+            
+            <button type="submit" class="btn btn-primary w-full mb-4">Sign In</button>
+            
+            <div class="text-center text-sm text-gray-500 mb-4">Or sign in with</div>
+            
+            <div class="grid grid-cols-2 gap-4">
+              <button type="button" id="googleLogin" class="btn btn-google">Google</button>
+              <button type="button" id="facebookLogin" class="btn btn-facebook">Facebook</button>
+            </div>
+          </form>
+        </div>
+        
+        <div id="signupForm" style="display: none;">
+          <div id="signupError" class="error-message text-center mb-4"></div>
+          
+          <form id="signupFormElement">
+            <div class="mb-4">
+              <label for="newUsername" class="block text-sm font-medium mb-1">Username</label>
+              <input type="text" id="newUsername" class="form-control" placeholder="Choose a username" required>
+            </div>
+            
+            <div class="mb-4">
+              <label for="newEmail" class="block text-sm font-medium mb-1">Email (Gmail only)</label>
+              <input type="email" id="newEmail" class="form-control" placeholder="example@gmail.com" required>
+            </div>
+            
+            <div class="mb-6">
+              <label for="newPassword" class="block text-sm font-medium mb-1">Password</label>
+              <input type="password" id="newPassword" class="form-control" placeholder="Choose a password" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary w-full mb-4">Create Account</button>
+          </form>
+        </div>
+        
+        <div class="mt-6 text-center">
+          <a href="index.html" class="text-sm text-accent">Return to Home</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // User accounts data structure
+    // Initialize with some default accounts if none exist
+    if (!localStorage.getItem('accounts')) {
+      const defaultAccounts = [
+        {
+          username: 'User',
+          email: 'user@gmail.com',
+          password: 'galaxy123',
+          stats: { level: 1, xp: 0, gamesCompleted: 0 },
+          loginHistory: []
+        },
+        {
+          username: 'Admin',
+          email: 'admin@gmail.com',
+          password: 'admin123',
+          stats: { level: 10, xp: 5000, gamesCompleted: 25 },
+          loginHistory: []
+        },
+        {
+          username: 'Gamer',
+          email: 'gamer@gmail.com',
+          password: 'play2win',
+          stats: { level: 5, xp: 2500, gamesCompleted: 15 },
+          loginHistory: []
+        },
+        {
+          username: 'Pro',
+          email: 'pro@gmail.com',
+          password: 'pro2023',
+          stats: { level: 20, xp: 12000, gamesCompleted: 50 },
+          loginHistory: []
+        }
+      ];
+      localStorage.setItem('accounts', JSON.stringify(defaultAccounts));
+    }
+    
+    // Tab switching
+    document.getElementById('loginTab').addEventListener('click', function() {
+      document.getElementById('loginForm').style.display = 'block';
+      document.getElementById('signupForm').style.display = 'none';
+      document.getElementById('loginTab').className = 'btn btn-primary mx-2';
+      document.getElementById('signupTab').className = 'btn btn-secondary mx-2';
+    });
+    
+    document.getElementById('signupTab').addEventListener('click', function() {
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('signupForm').style.display = 'block';
+      document.getElementById('loginTab').className = 'btn btn-secondary mx-2';
+      document.getElementById('signupTab').className = 'btn btn-primary mx-2';
+    });
+    
+    // Login form submission
+    document.getElementById('loginFormElement').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const loginError = document.getElementById('loginError');
+      
+      // Check if email is Gmail
+      if (!email.toLowerCase().endsWith('@gmail.com')) {
+        loginError.textContent = 'Please use a Gmail address to login.';
+        loginError.style.display = 'block';
+        return;
+      }
+      
+      // Get accounts from localStorage
+      const accounts = JSON.parse(localStorage.getItem('accounts'));
+      
+      // Find account with matching email and password
+      const account = accounts.find(acc => acc.email.toLowerCase() === email.toLowerCase() && acc.password === password);
+      
+      if (account) {
+        // Set login status
+        localStorage.setItem('isLoggedIn', 'true');
+        
+        // Record login time
+        const loginTime = new Date().toISOString();
+        account.lastLogin = loginTime;
+        account.loginHistory = account.loginHistory || [];
+        account.loginHistory.push(loginTime);
+        
+        // Ensure stats exist
+        if (!account.stats) {
+          account.stats = { level: 1, xp: 0, gamesCompleted: 0 };
+        }
+        
+        // Store current user info
+        localStorage.setItem('currentUser', JSON.stringify({
+          username: account.username,
+          email: account.email,
+          stats: account.stats,
+          lastLogin: loginTime
+        }));
+        
+        // Update accounts in localStorage
+        localStorage.setItem('accounts', JSON.stringify(accounts));
+        
+        // Redirect to home page
+        window.location.href = 'index.html';
+      } else {
+        loginError.textContent = 'Invalid email or password.';
+        loginError.style.display = 'block';
+      }
+    });
+    
+    // Signup form submission
+    document.getElementById('signupFormElement').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const username = document.getElementById('newUsername').value;
+      const email = document.getElementById('newEmail').value;
+      const password = document.getElementById('newPassword').value;
+      const signupError = document.getElementById('signupError');
+      
+      // Validate username length
+      if (username.length < 3) {
+        signupError.textContent = 'Username must be at least 3 characters.';
+        signupError.style.display = 'block';
+        return;
+      }
+      
+      // Validate password length
+      if (password.length < 6) {
+        signupError.textContent = 'Password must be at least 6 characters.';
+        signupError.style.display = 'block';
+        return;
+      }
+      
+      // Check if email is Gmail
+      if (!email.toLowerCase().endsWith('@gmail.com')) {
+        signupError.textContent = 'Please use a Gmail address to sign up.';
+        signupError.style.display = 'block';
+        return;
+      }
+      
+      // Get accounts from localStorage
+      const accounts = JSON.parse(localStorage.getItem('accounts')) || [];
+      
+      // Check if email already exists
+      if (accounts.some(acc => acc.email.toLowerCase() === email.toLowerCase())) {
+        signupError.textContent = 'An account with this email already exists.';
+        signupError.style.display = 'block';
+        return;
+      }
+      
+      // Create new account
+      const newAccount = {
+        username: username,
+        email: email,
+        password: password,
+        stats: { level: 1, xp: 0, gamesCompleted: 0 },
+        loginHistory: [new Date().toISOString()]
+      };
+      
+      accounts.push(newAccount);
+      localStorage.setItem('accounts', JSON.stringify(accounts));
+      
+      // Set login status
+      localStorage.setItem('isLoggedIn', 'true');
+      
+      // Store current user info
+      localStorage.setItem('currentUser', JSON.stringify({
+        username: newAccount.username,
+        email: newAccount.email,
+        stats: newAccount.stats,
+        lastLogin: newAccount.loginHistory[0]
+      }));
+      
+      // Redirect to home page
+      window.location.href = 'index.html';
+    });
+    
+    // Google login
+    document.getElementById('googleLogin').addEventListener('click', function() {
+      // For demo purposes, login as 'user@gmail.com'
+      let accounts = JSON.parse(localStorage.getItem('accounts'));
+      const demoAccount = accounts.find(acc => acc.email === 'user@gmail.com');
+      
+      if (demoAccount) {
+        const loginTime = new Date().toISOString();
+        demoAccount.lastLogin = loginTime;
+        demoAccount.loginHistory = demoAccount.loginHistory || [];
+        demoAccount.loginHistory.push(loginTime);
+        
+        localStorage.setItem('accounts', JSON.stringify(accounts));
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('currentUser', JSON.stringify({
+          username: demoAccount.username,
+          email: demoAccount.email,
+          stats: demoAccount.stats,
+          lastLogin: loginTime
+        }));
+        
+        window.location.href = 'index.html';
+      }
+    });
+    
+    // Facebook login
+    document.getElementById('facebookLogin').addEventListener('click', function() {
+      // For demo purposes, login as 'gamer@gmail.com'
+      let accounts = JSON.parse(localStorage.getItem('accounts'));
+      const demoAccount = accounts.find(acc => acc.email === 'gamer@gmail.com');
+      
+      if (demoAccount) {
+        const loginTime = new Date().toISOString();
+        demoAccount.lastLogin = loginTime;
+        demoAccount.loginHistory = demoAccount.loginHistory || [];
+        demoAccount.loginHistory.push(loginTime);
+        
+        localStorage.setItem('accounts', JSON.stringify(accounts));
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('currentUser', JSON.stringify({
+          username: demoAccount.username,
+          email: demoAccount.email,
+          stats: demoAccount.stats,
+          lastLogin: loginTime
+        }));
+        
+        window.location.href = 'index.html';
+      }
+    });
+    
+    // Check if already logged in
+    window.addEventListener('load', function() {
+      if (localStorage.getItem('isLoggedIn') === 'true') {
+        window.location.href = 'index.html';
+      }
+    });
+  </script>
+</body>
+</html> 

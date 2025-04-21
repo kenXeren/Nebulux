@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#ffd700">
+  <meta name="description" content="Nebulux - Level up your life through gamified quests and challenges">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Nebulux">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icons/icon-192x192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+  <title>Nebulux - Level Up Your Life</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="ai-model.js"></script>
+  <style>
+    :root {
+      --primary: #000000;
+      --secondary: #1a1a1a;
+      --accent: #ffd700;
+      --highlight: #3b82f6;
+      --background: #000000;
+      --text: #e5e7eb;
+      --hover: #2563eb;
+    }
+    
+    body { 
+      background-color: var(--background); 
+      color: var(--text); 
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      -webkit-tap-highlight-color: transparent;
+      background-image: url('https://i.ibb.co/QCkMJZP/space-galaxy-background.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      position: relative;
+    }
+    
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(10,20,40,0.85) 100%);
+      z-index: -1;
+    }
+    
+    .card { 
+      background-color: rgba(26, 26, 26, 0.8); 
+      backdrop-filter: blur(10px);
+      border-radius: 0.75rem; 
+      padding: 1rem; 
+      margin: 1rem 0;
+      box-shadow: 0 4px 20px rgba(255, 215, 0, 0.2);
+      border: 1px solid rgba(255, 215, 0, 0.1);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+    }
+    
+    .game-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 0.75rem;
+      transition: transform 0.3s;
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+    
+    .game-card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 30px rgba(255, 215, 0, 0.4);
+      z-index: 1;
+    }
+    
+    .game-card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 0.5rem;
+      transition: all 0.3s;
+    }
+    
+    .game-card:hover img {
+      transform: scale(1.1);
+      filter: brightness(1.2);
+    }
+    
+    .game-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.95), transparent);
+      padding: 1rem;
+      color: white;
+      transition: all 0.3s;
+    }
+    
+    .game-card:hover .game-overlay {
+      padding-bottom: 1.5rem;
+    }
+    
+    .price-tag {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      background: linear-gradient(135deg, var(--accent) 0%, #ffb700 100%);
+      color: black;
+      padding: 0.25rem 0.75rem;
+      border-radius: 1rem;
+      font-weight: bold;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+      transform: translateZ(5px);
+    }
+    
+    .offline-badge {
+      position: absolute;
+      top: 0.5rem;
+      left: 0.5rem;
+      background: linear-gradient(135deg, var(--highlight) 0%, #2563eb 100%);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 1rem;
+      font-size: 0.75rem;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+      transform: translateZ(5px);
+    }
+    
+    .btn {
+      display: inline-block;
+      padding: 0.75rem 1.25rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: 0.5s;
+    }
+    
+    .btn:hover::before {
+      left: 100%;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent) 0%, #ffb700 100%);
+      color: black;
+      border: none;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+    }
+    
+    .btn-secondary {
+      background: linear-gradient(135deg, var(--highlight) 0%, #2563eb 100%);
+      color: white;
+      border: none;
+    }
+    
+    .btn-secondary:hover {
+      background-color: #2563eb;
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+    }
+    
+    .search-bar {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 2rem;
+      background-color: rgba(26, 26, 26, 0.8);
+      backdrop-filter: blur(10px);
+      color: var(--text);
+      border: 1px solid var(--accent);
+      margin-bottom: 1rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s;
+    }
+    
+    .search-bar:hover, .search-bar:focus-within {
+      box-shadow: 0 4px 20px rgba(255, 215, 0, 0.4);
+      border-color: #ffb700;
+    }
+    
+    .search-bar input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      width: 100%;
+    }
+    
+    .category-filter {
+      display: flex;
+      overflow-x: auto;
+      gap: 0.5rem;
+      padding: 0.5rem 0;
+      margin-bottom: 1rem;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    
+    .category-filter::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .category-btn {
+      padding: 0.5rem 1.5rem;
+      border-radius: 2rem;
+      background-color: rgba(26, 26, 26, 0.8);
+      color: var(--text);
+      white-space: nowrap;
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      transition: all 0.3s;
+    }
+    
+    .category-btn:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    
+    .category-btn.active {
+      background: linear-gradient(135deg, var(--accent) 0%, #ffb700 100%);
+      color: black;
+      border: 1px solid transparent;
+      box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+    }
+    
+    .cart-icon {
+      position: relative;
+      padding: 0.5rem;
+      border-radius: 50%;
+      background-color: rgba(26, 26, 26, 0.8);
+      backdrop-filter: blur(5px);
+      transition: all 0.3s;
+    }
+    
+    .cart-icon:hover {
+      background-color: rgba(255, 215, 0, 0.2);
+      transform: translateY(-3px);
+    }
+    
+    .cart-count {
+      position: absolute;
+      top: -0.5rem;
+      right: -0.5rem;
+      background: linear-gradient(135deg, var(--accent) 0%, #ffb700 100%);
+      color: black;
+      border-radius: 50%;
+      width: 1.5rem;
+      height: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: bold;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    }
+    
+    header {
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+      padding: 1rem;
+      margin: -1rem -1rem 1rem -1rem;
+      border-radius: 0.75rem 0.75rem 0 0;
+      background-color: rgba(0, 0, 0, 0.7);
+    }
+    
+    footer {
+      backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(255, 215, 0, 0.1);
+      padding: 2rem 1rem 1rem 1rem;
+      margin: 1rem -1rem -1rem -1rem;
+      border-radius: 0 0 0.75rem 0.75rem;
+      background-color: rgba(0, 0, 0, 0.7);
+    }
+    
+    @media (max-width: 640px) {
+      .game-card img {
+        height: 150px;
+      }
+      
+      .btn {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+      }
+      
+      header {
+        padding: 0.75rem;
+      }
+    }
+    
+    /* Animations */
+    @keyframes glow {
+      0% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
+      50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.8); }
+      100% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .ai-tools-section {
+      animation: fadeIn 0.5s ease-out;
+    }
+    
+    .premium-section {
+      position: relative;
+      overflow: hidden;
+      animation: glow 3s infinite;
+    }
+    
+    .game-notification {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: rgba(26, 26, 26, 0.9);
+      backdrop-filter: blur(10px);
+      color: var(--text);
+      padding: 1rem 1.5rem;
+      border-radius: 0.5rem;
+      border-left: 4px solid var(--accent);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      z-index: 100;
+      transform: translateX(120%);
+      transition: transform 0.3s ease-out;
+    }
+    
+    .game-notification.show {
+      transform: translateX(0);
+    }
+  </style>
+  <script>
+    // Register service worker with improved error handling and update checking
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', async () => {
+        try {
+          const registration = await navigator.serviceWorker.register('sw.js');
+          console.log('ServiceWorker registration successful with scope:', registration.scope);
+          
+          // Check for updates
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                // New content is available, show update notification
+                if (confirm('New version available! Click OK to update.')) {
+                  window.location.reload();
+                }
+              }
+            });
+          });
+        } catch (err) {
+          console.error('ServiceWorker registration failed:', err);
+        }
+      });
+    }
+  </script>
+</head>
+<body class="p-4 max-w-6xl mx-auto">
+  <header class="flex justify-between items-center mb-8">
+    <div>
+      <h1 class="text-3xl font-bold">Nebulux</h1>
+      <p class="text-sm opacity-75">Offline Games for Anywhere</p>
+    </div>
+    <div class="flex items-center gap-4">
+      <div class="cart-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+        <span class="cart-count">0</span>
+      </div>
+      <button class="btn btn-primary">Sign In</button>
+    </div>
+  </header>
+
+  <div class="search-bar">
+    <input type="text" placeholder="Search games..." class="w-full bg-transparent border-none outline-none">
+  </div>
+
+  <div class="category-filter">
+    <button class="category-btn active">All</button>
+    <button class="category-btn">Action</button>
+    <button class="category-btn">Adventure</button>
+    <button class="category-btn">Puzzle</button>
+    <button class="category-btn">RPG</button>
+    <button class="category-btn">Strategy</button>
+    <button class="category-btn">Simulation</button>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <!-- Free Game 1 -->
+    <div class="game-card">
+      <img src="https://via.placeholder.com/300x200/1a1a1a/ffd700?text=AI+Adventure" alt="AI Adventure">
+      <span class="offline-badge">Free</span>
+      <span class="price-tag">FREE</span>
+      <div class="game-overlay">
+        <h3 class="font-bold">AI Adventure</h3>
+        <p class="text-sm opacity-75">Action, AI-Powered</p>
+        <button onclick="launchGame('ai-adventure')" class="btn btn-primary mt-2 w-full">Play Now</button>
+      </div>
+    </div>
+    
+    <!-- Free Game 2 -->
+    <div class="game-card">
+      <img src="https://via.placeholder.com/300x200/1a1a1a/ffd700?text=Puzzle+AI" alt="Puzzle AI">
+      <span class="offline-badge">Free</span>
+      <span class="price-tag">FREE</span>
+      <div class="game-overlay">
+        <h3 class="font-bold">Puzzle AI</h3>
+        <p class="text-sm opacity-75">Puzzle, AI-Powered</p>
+        <button onclick="launchGame('puzzle-ai')" class="btn btn-primary mt-2 w-full">Play Now</button>
+      </div>
+    </div>
+    
+    <!-- Paid Games -->
+    <!-- Game 1 -->
+    <div class="game-card">
+      <img src="https://via.placeholder.com/300x200/1a1a1a/ffd700?text=Pixel+Adventure" alt="Pixel Adventure">
+      <span class="offline-badge">Offline</span>
+      <span class="price-tag">$4.99</span>
+      <div class="game-overlay">
+        <h3 class="font-bold">Pixel Adventure</h3>
+        <p class="text-sm opacity-75">Action, Platformer</p>
+        <button class="btn btn-primary mt-2 w-full">Add to Cart</button>
+      </div>
+    </div>
+    
+    <!-- Game 2 -->
+    <div class="game-card">
+      <img src="https://via.placeholder.com/300x200/1a1a1a/ffd700?text=Space+Explorer" alt="Space Explorer">
+      <span class="offline-badge">Offline</span>
+      <span class="price-tag">$3.99</span>
+      <div class="game-overlay">
+        <h3 class="font-bold">Space Explorer</h3>
+        <p class="text-sm opacity-75">Adventure, Sci-Fi</p>
+        <button class="btn btn-primary mt-2 w-full">Add to Cart</button>
+      </div>
+    </div>
+    
+    <!-- Game 3 -->
+    <div class="game-card">
+      <img src="https://via.placeholder.com/300x200/1a1a1a/ffd700?text=Zombie+Survival" alt="Zombie Survival">
+      <span class="offline-badge">Offline</span>
+      <span class="price-tag">$5.99</span>
+      <div class="game-overlay">
+        <h3 class="font-bold">Zombie Survival</h3>
+        <p class="text-sm opacity-75">Action, Survival</p>
+        <button class="btn btn-primary mt-2 w-full">Add to Cart</button>
+      </div>
+    </div>
+    
+    <!-- Game 4 -->
+    <div class="game-card">
+      <img src="https://via.placeholder.com/300x200/1a1a1a/ffd700?text=Puzzle+Master" alt="Puzzle Master">
+      <span class="offline-badge">Offline</span>
+      <span class="price-tag">$2.99</span>
+      <div class="game-overlay">
+        <h3 class="font-bold">Puzzle Master</h3>
+        <p class="text-sm opacity-75">Puzzle, Brain</p>
+        <button class="btn btn-primary mt-2 w-full">Add to Cart</button>
+      </div>
+    </div>
+    
+    <!-- Game 5 -->
+    <div class="game-card">
+      <img src="https://via.placeholder.com/300x200/1a1a1a/ffd700?text=Farm+Simulator" alt="Farm Simulator">
+      <span class="offline-badge">Offline</span>
+      <span class="price-tag">$4.49</span>
+      <div class="game-overlay">
+        <h3 class="font-bold">Farm Simulator</h3>
+        <p class="text-sm opacity-75">Simulation, Casual</p>
+        <button class="btn btn-primary mt-2 w-full">Add to Cart</button>
+      </div>
+    </div>
+    
+    <!-- Game 6 -->
+    <div class="game-card">
+      <img src="https://via.placeholder.com/300x200/1a1a1a/ffd700?text=Dragon+Quest" alt="Dragon Quest">
+      <span class="offline-badge">Offline</span>
+      <span class="price-tag">$6.99</span>
+      <div class="game-overlay">
+        <h3 class="font-bold">Dragon Quest</h3>
+        <p class="text-sm opacity-75">RPG, Fantasy</p>
+        <button class="btn btn-primary mt-2 w-full">Add to Cart</button>
+      </div>
+    </div>
+    
+    <!-- Game 7 -->
+    <div class="game-card">
+      <img src="https://via.placeholder.com/300x200/1a1a1a/ffd700?text=Strategy+Empire" alt="Strategy Empire">
+      <span class="offline-badge">Offline</span>
+      <span class="price-tag">$5.49</span>
+      <div class="game-overlay">
+        <h3 class="font-bold">Strategy Empire</h3>
+        <p class="text-sm opacity-75">Strategy, Tactics</p>
+        <button class="btn btn-primary mt-2 w-full">Add to Cart</button>
+      </div>
+    </div>
+    
+    <!-- Game 8 -->
+    <div class="game-card">
+      <img src="https://via.placeholder.com/300x200/1a1a1a/ffd700?text=Racing+Champions" alt="Racing Champions">
+      <span class="offline-badge">Offline</span>
+      <span class="price-tag">$4.99</span>
+      <div class="game-overlay">
+        <h3 class="font-bold">Racing Champions</h3>
+        <p class="text-sm opacity-75">Racing, Sports</p>
+        <button class="btn btn-primary mt-2 w-full">Add to Cart</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Tools Section -->
+  <div class="mt-8 p-4 bg-secondary rounded-lg ai-tools-section">
+    <h2 class="text-xl font-bold mb-4 flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+      </svg>
+      AI-Powered Tools
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="card">
+        <h3 class="font-bold mb-2 flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          Game Assistant
+        </h3>
+        <p class="text-sm opacity-75 mb-4">Get personalized game recommendations and tips based on your playing style.</p>
+        <button class="btn btn-primary">Try Now</button>
+      </div>
+      <div class="card">
+        <h3 class="font-bold mb-2 flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+          Progress Analyzer
+        </h3>
+        <p class="text-sm opacity-75 mb-4">Analyze your gaming patterns and get insights to improve your skills.</p>
+        <button class="btn btn-primary">Try Now</button>
+      </div>
+      <div class="card">
+        <h3 class="font-bold mb-2 flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+          </svg>
+          AI Chat Support
+        </h3>
+        <p class="text-sm opacity-75 mb-4">24/7 AI-powered support for all your gaming questions.</p>
+        <button class="btn btn-primary">Chat Now</button>
+      </div>
+      <div class="card">
+        <h3 class="font-bold mb-2 flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+          </svg>
+          Game Strategy AI
+        </h3>
+        <p class="text-sm opacity-75 mb-4">Get AI-generated strategies and walkthroughs for any game.</p>
+        <button class="btn btn-primary">Get Help</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Premium Subscription -->
+  <div class="mt-8 p-4 bg-secondary rounded-lg premium-section">
+    <h2 class="text-xl font-bold mb-4 flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+      </svg>
+      Premium Subscription
+    </h2>
+    <p class="mb-4">Get unlimited access to all games for just $9.99/month!</p>
+    <ul class="mb-4 list-disc list-inside space-y-2">
+      <li class="flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        Play all games offline
+      </li>
+      <li class="flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        No ads
+      </li>
+      <li class="flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        Exclusive content
+      </li>
+      <li class="flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        Early access to new games
+      </li>
+    </ul>
+    <button class="btn btn-secondary">Subscribe Now</button>
+  </div>
+
+  <div id="gameNotification" class="game-notification">
+    Game added to cart!
+  </div>
+
+  <footer class="mt-8 pt-8 border-t border-gray-800">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div>
+        <h3 class="font-bold mb-2">Nebulux</h3>
+        <p class="text-sm opacity-75">Offline games for anywhere, anytime.</p>
+      </div>
+      <div>
+        <h3 class="font-bold mb-2">Links</h3>
+        <ul class="text-sm">
+          <li><a href="#" class="hover:text-accent">About Us</a></li>
+          <li><a href="#" class="hover:text-accent">Contact</a></li>
+          <li><a href="#" class="hover:text-accent">Terms of Service</a></li>
+          <li><a href="#" class="hover:text-accent">Privacy Policy</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="font-bold mb-2">Connect</h3>
+        <div class="flex gap-4">
+          <a href="#" class="hover:text-accent">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
+            </svg>
+          </a>
+          <a href="#" class="hover:text-accent">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+            </svg>
+          </a>
+          <a href="#" class="hover:text-accent">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="mt-8 text-center text-sm opacity-75">
+      &copy; 2023 Nebulux. All rights reserved.
+    </div>
+  </footer>
+
+  <script>
+    // Cart functionality
+    let cart = [];
+    let cartCount = 0;
+    
+    function updateCartCount() {
+      document.querySelector('.cart-count').textContent = cartCount;
+    }
+    
+    // Fix game launching functionality
+    function launchGame(gameId) {
+      // Create modal for game
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50';
+      
+      if (gameId === 'ai-adventure') {
+        modal.innerHTML = `
+          <div class="relative w-full max-w-4xl h-[80vh]">
+            <button class="absolute top-2 right-2 text-white text-2xl z-10 bg-black bg-opacity-50 w-8 h-8 rounded-full flex items-center justify-center">&times;</button>
+            <div class="game-container w-full h-full">
+              <canvas id="gameCanvas" class="w-full h-full"></canvas>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Close button
+        modal.querySelector('button').addEventListener('click', () => {
+          modal.remove();
+        });
+        
+        // Game logic
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas size
+        function resizeCanvas() {
+          canvas.width = canvas.offsetWidth;
+          canvas.height = canvas.offsetHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Game variables
+        let player = { x: canvas.width/2, y: canvas.height/2, size: 20, speed: 5 };
+        let enemies = [];
+        let score = 0;
+        
+        // Create enemies
+        function createEnemy() {
+          return {
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: 15,
+            speed: 2
+          };
+        }
+        
+        // Game loop
+        function gameLoop() {
+          if (!document.body.contains(canvas)) return; // Stop if canvas was removed
+          
+          // Clear canvas
+          ctx.fillStyle = '#000';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          
+          // Draw player
+          ctx.fillStyle = '#ffd700';
+          ctx.fillRect(player.x - player.size/2, player.y - player.size/2, player.size, player.size);
+          
+          // Move player with arrow keys or WASD
+          if (keys.ArrowLeft || keys.a) player.x -= player.speed;
+          if (keys.ArrowRight || keys.d) player.x += player.speed;
+          if (keys.ArrowUp || keys.w) player.y -= player.speed;
+          if (keys.ArrowDown || keys.s) player.y += player.speed;
+          
+          // Keep player in bounds
+          player.x = Math.max(player.size/2, Math.min(canvas.width - player.size/2, player.x));
+          player.y = Math.max(player.size/2, Math.min(canvas.height - player.size/2, player.y));
+          
+          // Update and draw enemies
+          enemies.forEach((enemy, index) => {
+            // Move enemy towards player
+            const dx = player.x - enemy.x;
+            const dy = player.y - enemy.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            enemy.x += (dx/dist) * enemy.speed;
+            enemy.y += (dy/dist) * enemy.speed;
+            
+            // Draw enemy
+            ctx.fillStyle = '#ff0000';
+            ctx.fillRect(enemy.x - enemy.size/2, enemy.y - enemy.size/2, enemy.size, enemy.size);
+            
+            // Check collision
+            if (dist < (player.size + enemy.size)/2) {
+              if (document.body.contains(modal)) {
+                const gameOverMsg = document.createElement('div');
+                gameOverMsg.className = 'absolute inset-0 flex items-center justify-center flex-col bg-black bg-opacity-80';
+                gameOverMsg.innerHTML = `
+                  <h2 class="text-4xl text-accent mb-4">Game Over!</h2>
+                  <p class="text-2xl mb-6">Score: ${score}</p>
+                  <button class="btn btn-primary">Play Again</button>
+                `;
+                modal.querySelector('.game-container').appendChild(gameOverMsg);
+                
+                gameOverMsg.querySelector('button').addEventListener('click', () => {
+                  gameOverMsg.remove();
+                  player = { x: canvas.width/2, y: canvas.height/2, size: 20, speed: 5 };
+                  enemies = [];
+                  score = 0;
+                });
+              }
+              return;
+            }
+          });
+          
+          // Add new enemies and increase score
+          if (Math.random() < 0.02) {
+            enemies.push(createEnemy());
+            score++;
+          }
+          
+          // Draw score
+          ctx.fillStyle = '#fff';
+          ctx.font = '20px Arial';
+          ctx.fillText(`Score: ${score}`, 10, 30);
+          
+          requestAnimationFrame(gameLoop);
+        }
+        
+        // Handle keyboard input
+        const keys = {};
+        window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
+        window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+        
+        // Start game
+        gameLoop();
+        
+        // Dispatch gameStarted event for AI model tracking
+        document.dispatchEvent(new CustomEvent('gameStarted', { 
+          detail: { gameId: gameId, gameName: 'AI Adventure' }
+        }));
+        
+      } else if (gameId === 'puzzle-ai') {
+        modal.innerHTML = `
+          <div class="relative w-full max-w-lg">
+            <button class="absolute top-2 right-2 text-white text-2xl z-10 bg-black bg-opacity-50 w-8 h-8 rounded-full flex items-center justify-center">&times;</button>
+            <div class="p-8 bg-secondary rounded-lg">
+              <h2 class="text-2xl font-bold mb-4 text-center">Puzzle AI</h2>
+              <div id="puzzle" class="grid grid-cols-3 gap-2 max-w-sm mx-auto"></div>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Close button
+        modal.querySelector('button').addEventListener('click', () => {
+          modal.remove();
+        });
+        
+        // Game logic
+        const puzzle = document.getElementById('puzzle');
+        let tiles = Array.from({length: 8}, (_, i) => i + 1);
+        tiles.push(null);
+        
+        function shuffle(array) {
+          for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+          }
+          return array;
+        }
+        
+        function createTiles() {
+          puzzle.innerHTML = '';
+          shuffle(tiles).forEach((num, i) => {
+            const tile = document.createElement('div');
+            tile.className = num === null 
+              ? 'empty h-20 w-20 bg-black rounded' 
+              : 'tile h-20 w-20 bg-accent text-black flex items-center justify-center text-2xl font-bold rounded cursor-pointer';
+            tile.textContent = num;
+            tile.addEventListener('click', () => moveTile(i));
+            puzzle.appendChild(tile);
+          });
+        }
+        
+        function moveTile(index) {
+          const emptyIndex = tiles.indexOf(null);
+          if (isAdjacent(index, emptyIndex)) {
+            [tiles[index], tiles[emptyIndex]] = [tiles[emptyIndex], tiles[index]];
+            createTiles();
+            checkWin();
+          }
+        }
+        
+        function isAdjacent(index1, index2) {
+          const row1 = Math.floor(index1 / 3);
+          const col1 = index1 % 3;
+          const row2 = Math.floor(index2 / 3);
+          const col2 = index2 % 3;
+          return Math.abs(row1 - row2) + Math.abs(col1 - col2) === 1;
+        }
+        
+        function checkWin() {
+          const win = tiles.slice(0, -1).every((num, i) => num === i + 1);
+          if (win && document.body.contains(modal)) {
+            const winMsg = document.createElement('div');
+            winMsg.className = 'absolute inset-0 flex items-center justify-center flex-col bg-black bg-opacity-80';
+            winMsg.innerHTML = `
+              <h2 class="text-4xl text-accent mb-4">You Win!</h2>
+              <button class="btn btn-primary">Play Again</button>
+            `;
+            modal.querySelector('.p-8').appendChild(winMsg);
+            
+            winMsg.querySelector('button').addEventListener('click', () => {
+              winMsg.remove();
+              tiles = Array.from({length: 8}, (_, i) => i + 1);
+              tiles.push(null);
+              createTiles();
+            });
+          }
+        }
+        
+        createTiles();
+        
+        // Dispatch gameStarted event for AI model tracking
+        document.dispatchEvent(new CustomEvent('gameStarted', { 
+          detail: { gameId: gameId, gameName: 'Puzzle AI' }
+        }));
+      }
+    }
+    
+    // Enhanced game ending function to provide data to AI model
+    function endGame(gameId, score, enjoyment = 0.5) {
+      // Dispatch event for AI to capture
+      document.dispatchEvent(new CustomEvent('gameEnded', { 
+        detail: { 
+          gameId: gameId,
+          score: score,
+          enjoyment: enjoyment
+        }
+      }));
+    }
+    
+    // For any button that adds to cart, track as potential interest for AI model
+    document.querySelectorAll('.btn-primary').forEach(button => {
+      button.addEventListener('click', function() {
+        if (this.textContent.trim() === 'Add to Cart') {
+          const gameCard = this.closest('.game-card');
+          const gameTitle = gameCard.querySelector('h3').textContent;
+          const gamePrice = gameCard.querySelector('.price-tag').textContent;
+          
+          // Track user interest for AI model
+          if (window.galaxiumAI) {
+            window.galaxiumAI.updateUserPreferences(gameTitle, 0.7, 1); // Medium-high interest if adding to cart
+          }
+          
+          // Original cart functionality
+          cart.push({
+            title: gameTitle,
+            price: gamePrice
+          });
+          
+          cartCount++;
+          updateCartCount();
+          
+          // Show notification with improved system
+          showNotification(`${gameTitle} added to cart!`);
+        }
+      });
+    });
+    
+    // Add game rating functionality after gameplay
+    function showGameRating(gameId, score) {
+      const gameModal = document.createElement('div');
+      gameModal.className = 'fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50';
+      gameModal.innerHTML = `
+        <div class="bg-secondary rounded-lg p-6 max-w-md w-full text-center">
+          <h3 class="text-xl font-bold mb-2">Game Over!</h3>
+          <p class="mb-4">Your score: <span class="text-accent font-bold">${score}</span></p>
+          <p class="mb-2">How was your experience?</p>
+          <div class="flex justify-center space-x-2 mb-6">
+            <button class="rating-btn px-3 py-1 rounded" data-rating="0.1">😡</button>
+            <button class="rating-btn px-3 py-1 rounded" data-rating="0.3">😕</button>
+            <button class="rating-btn px-3 py-1 rounded" data-rating="0.5">😐</button>
+            <button class="rating-btn px-3 py-1 rounded" data-rating="0.7">🙂</button>
+            <button class="rating-btn px-3 py-1 rounded" data-rating="1.0">😄</button>
+          </div>
+          <button class="btn btn-primary w-full">Close</button>
+        </div>
+      `;
+      
+      document.body.appendChild(gameModal);
+      
+      // Style rating buttons
+      const ratingBtns = gameModal.querySelectorAll('.rating-btn');
+      ratingBtns.forEach(btn => {
+        btn.classList.add('bg-black', 'bg-opacity-30', 'hover:bg-accent', 'hover:text-black', 'transition-colors');
+        
+        btn.addEventListener('click', function() {
+          // Remove active class from all buttons
+          ratingBtns.forEach(b => b.classList.remove('bg-accent', 'text-black'));
+          
+          // Add active class to clicked button
+          this.classList.add('bg-accent', 'text-black');
+          
+          // Record the rating when user clicks
+          const rating = parseFloat(this.getAttribute('data-rating'));
+          endGame(gameId, score, rating);
+        });
+      });
+      
+      // Close button
+      gameModal.querySelector('.btn-primary').addEventListener('click', () => {
+        gameModal.remove();
+      });
+    }
+    
+    // Improved notification system
+    function showNotification(message) {
+      const notification = document.getElementById('gameNotification');
+      notification.textContent = message;
+      notification.classList.add('show');
+      
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, 3000);
+    }
+  </script>
+</body>
+</html> 

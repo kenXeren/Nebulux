@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#ffd700">
+    <title>Quest Miner - Galaxium</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/png" href="/icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #000000;
+            --secondary: #1a1a1a;
+            --accent: #ffd700;
+            --highlight: #3b82f6;
+            --text: #e5e7eb;
+        }
+
+        body {
+            background-color: var(--primary);
+            color: var(--text);
+            font-family: 'Press Start 2P', cursive;
+            touch-action: manipulation;
+        }
+
+        .pixel-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 4px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .pixel {
+            aspect-ratio: 1;
+            background-color: var(--secondary);
+            border: 2px solid var(--accent);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pixel:active {
+            transform: scale(0.95);
+        }
+
+        .pixel.revealed {
+            background-color: var(--accent);
+        }
+
+        .upgrade-btn {
+            background-color: var(--accent);
+            color: black;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .upgrade-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .upgrade-btn:not(:disabled):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(255, 215, 0, 0.3);
+        }
+
+        .stats {
+            background-color: var(--secondary);
+            border-radius: 1rem;
+            padding: 1rem;
+            margin: 1rem 0;
+            border: 2px solid var(--accent);
+        }
+
+        @keyframes sparkle {
+            0% { transform: scale(0) rotate(0deg); opacity: 1; }
+            100% { transform: scale(1.5) rotate(180deg); opacity: 0; }
+        }
+
+        .sparkle {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            pointer-events: none;
+        }
+
+        .premium-feature {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .premium-feature::after {
+            content: '👑 Premium';
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background-color: var(--accent);
+            color: black;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+        }
+
+        .ad-space {
+            background-color: var(--secondary);
+            border: 2px dashed var(--accent);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 1rem 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="p-4">
+    <div class="max-w-lg mx-auto">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold text-accent mb-2">Quest Miner</h1>
+            <p class="opacity-75">Complete quests, earn XP, level up your life!</p>
+        </div>
+
+        <div class="stats grid grid-cols-2 gap-4 text-center">
+            <div>
+                <div class="text-xl font-bold text-accent" id="pixelCount">0</div>
+                <div class="text-sm opacity-75">Pixels Mined</div>
+            </div>
+            <div>
+                <div class="text-xl font-bold text-accent" id="multiplier">x1</div>
+                <div class="text-sm opacity-75">Mining Power</div>
+            </div>
+        </div>
+
+        <div class="pixel-grid my-8" id="pixelGrid"></div>
+
+        <div class="grid grid-cols-2 gap-4 mb-8">
+            <button class="upgrade-btn" id="upgradeMultiplier">
+                Upgrade Mining Power<br>
+                <span class="text-sm" id="multiplierCost">Cost: 10 pixels</span>
+            </button>
+            <button class="upgrade-btn premium-feature" id="autoPilot" disabled>
+                Auto Pilot Mode<br>
+                <span class="text-sm">Premium Only</span>
+            </button>
+        </div>
+
+        <div class="ad-space">
+            <p class="mb-2">👑 Go Premium!</p>
+            <p class="text-sm opacity-75 mb-4">Remove ads, unlock Auto Pilot, and get 2x mining speed!</p>
+            <button class="upgrade-btn" id="goPremium">
+                Upgrade to Premium - $4.99
+            </button>
+        </div>
+
+        <div class="ad-space" id="adSpace">
+            Advertisement Space
+        </div>
+    </div>
+
+    <audio id="clickSound" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3" preload="auto"></audio>
+    <audio id="upgradeSound" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3" preload="auto"></audio>
+    <audio id="backgroundMusic" src="https://assets.mixkit.co/active_storage/sfx/123/123-preview.mp3" loop preload="auto"></audio>
+
+    <script>
+        // Game state
+        let pixels = 0;
+        let multiplier = 1;
+        let multiplierCost = 10;
+        let isPremium = false;
+        let isAutoPilotActive = false;
+        let soundEnabled = true;
+
+        // DOM elements
+        const pixelGrid = document.getElementById('pixelGrid');
+        const pixelCountEl = document.getElementById('pixelCount');
+        const multiplierEl = document.getElementById('multiplier');
+        const multiplierCostEl = document.getElementById('multiplierCost');
+        const upgradeMultiplierBtn = document.getElementById('upgradeMultiplier');
+        const autoPilotBtn = document.getElementById('autoPilot');
+        const goPremiumBtn = document.getElementById('goPremium');
+        const adSpace = document.getElementById('adSpace');
+
+        // Audio elements
+        const clickSound = document.getElementById('clickSound');
+        const upgradeSound = document.getElementById('upgradeSound');
+        const backgroundMusic = document.getElementById('backgroundMusic');
+
+        // Initialize grid
+        function initGrid() {
+            for (let i = 0; i < 25; i++) {
+                const pixel = document.createElement('div');
+                pixel.className = 'pixel';
+                pixel.addEventListener('click', () => minePixel(pixel));
+                pixelGrid.appendChild(pixel);
+            }
+        }
+
+        // Play sound
+        function playSound(sound) {
+            if (soundEnabled) {
+                sound.currentTime = 0;
+                sound.play().catch(e => console.log('Sound play failed:', e));
+            }
+        }
+
+        // Create sparkle effect
+        function createSparkle(x, y) {
+            const sparkle = document.createElement('div');
+            sparkle.className = 'sparkle';
+            sparkle.style.left = x + 'px';
+            sparkle.style.top = y + 'px';
+            sparkle.innerHTML = '✨';
+            document.body.appendChild(sparkle);
+
+            sparkle.style.animation = 'sparkle 0.5s ease-out forwards';
+            setTimeout(() => sparkle.remove(), 500);
+        }
+
+        // Mine pixel
+        function minePixel(pixel) {
+            if (!pixel.classList.contains('revealed')) {
+                playSound(clickSound);
+                pixel.classList.add('revealed');
+
+                // Add sparkle effect
+                const rect = pixel.getBoundingClientRect();
+                createSparkle(rect.left + rect.width / 2, rect.top + rect.height / 2);
+
+                // Add pixels based on multiplier
+                pixels += multiplier;
+                pixelCountEl.textContent = pixels;
+
+                // Reset pixel after delay
+                setTimeout(() => {
+                    pixel.classList.remove('revealed');
+                }, 1000);
+
+                // Update upgrade button state
+                upgradeMultiplierBtn.disabled = pixels < multiplierCost;
+            }
+        }
+
+        // Upgrade multiplier
+        function upgradeMultiplier() {
+            if (pixels >= multiplierCost) {
+                playSound(upgradeSound);
+                pixels -= multiplierCost;
+                multiplier++;
+                multiplierCost = Math.floor(multiplierCost * 1.5);
+
+                pixelCountEl.textContent = pixels;
+                multiplierEl.textContent = `x${multiplier}`;
+                multiplierCostEl.textContent = `Cost: ${multiplierCost} pixels`;
+                upgradeMultiplierBtn.disabled = pixels < multiplierCost;
+            }
+        }
+
+        // Auto pilot mode
+        function startAutoPilot() {
+            if (!isAutoPilotActive && isPremium) {
+                isAutoPilotActive = true;
+                autoPilotBtn.textContent = 'Auto Pilot: ON';
+
+                function autoMine() {
+                    if (isAutoPilotActive) {
+                        const availablePixels = Array.from(document.querySelectorAll('.pixel:not(.revealed)'));
+                        if (availablePixels.length > 0) {
+                            const randomPixel = availablePixels[Math.floor(Math.random() * availablePixels.length)];
+                            minePixel(randomPixel);
+                        }
+                        setTimeout(autoMine, 1000);
+                    }
+                }
+
+                autoMine();
+            }
+        }
+
+        // Upgrade to premium
+        function upgradeToPremium() {
+            // In a real app, this would integrate with a payment processor
+            alert('Premium upgrade simulation: Success!');
+            isPremium = true;
+            multiplier *= 2;
+            multiplierEl.textContent = `x${multiplier}`;
+            autoPilotBtn.disabled = false;
+            adSpace.style.display = 'none';
+            goPremiumBtn.parentElement.style.display = 'none';
+        }
+
+        // Event listeners
+        upgradeMultiplierBtn.addEventListener('click', upgradeMultiplier);
+        autoPilotBtn.addEventListener('click', startAutoPilot);
+        goPremiumBtn.addEventListener('click', upgradeToPremium);
+
+        // Start background music on first interaction
+        document.addEventListener('click', () => {
+            if (soundEnabled) {
+                backgroundMusic.play().catch(e => console.log('Background music play failed:', e));
+            }
+        }, { once: true });
+
+        // Initialize game
+        initGrid();
+        upgradeMultiplierBtn.disabled = true;
+
+        // Save game state
+        setInterval(() => {
+            localStorage.setItem('pixelMinerState', JSON.stringify({
+                pixels,
+                multiplier,
+                multiplierCost,
+                isPremium,
+                isAutoPilotActive
+            }));
+        }, 5000);
+
+        // Load game state
+        const savedState = localStorage.getItem('pixelMinerState');
+        if (savedState) {
+            const state = JSON.parse(savedState);
+            pixels = state.pixels;
+            multiplier = state.multiplier;
+            multiplierCost = state.multiplierCost;
+            isPremium = state.isPremium;
+            isAutoPilotActive = state.isAutoPilotActive;
+
+            pixelCountEl.textContent = pixels;
+            multiplierEl.textContent = `x${multiplier}`;
+            multiplierCostEl.textContent = `Cost: ${multiplierCost} pixels`;
+            upgradeMultiplierBtn.disabled = pixels < multiplierCost;
+
+            if (isPremium) {
+                autoPilotBtn.disabled = false;
+                adSpace.style.display = 'none';
+                goPremiumBtn.parentElement.style.display = 'none';
+                if (isAutoPilotActive) startAutoPilot();
+            }
+        }
+    </script>
+</body>
+</html> 
